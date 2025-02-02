@@ -42,9 +42,9 @@ async def send_next_question(message: types.Message, user_id: int):
         return
 
     question = questions_for_beginner[quiz_state.current_question]
-    keyboard_buttons = [types.InlineKeyboardButton(text=option, callback_data=option)
+    keyboard_buttons = [[types.InlineKeyboardButton(text=option, callback_data=option)]
                         for option in question['answer_options']]
-    keyboard = types.InlineKeyboardMarkup(inline_keyboard=[keyboard_buttons])
+    keyboard = types.InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
 
     if quiz_state.message_id:
         await message.bot.edit_message_text(
