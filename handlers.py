@@ -1,5 +1,6 @@
 from aiogram import types, Router, F
 from aiogram.filters.command import Command
+
 from questions import (
     questions_for_beginner,
     questions_for_advanced,
@@ -14,7 +15,7 @@ class QuizState:
         self.current_question = 0
         self.correct_answer = 0
         self.message_id = None  # Добавляем хранение id сообщения с вопросом
-        self.questions_lvl = str()
+        self.questions_lvl = str()  # Добавляем хранение уровня сложности
         self.questions = list()
 
 
@@ -78,14 +79,14 @@ async def send_next_question(message: types.Message, user_id: int):
     quiz_state.questions = questions
     question = quiz_state.questions[quiz_state.current_question]
 
-    keyboard_buttons = [[types.InlineKeyboardButton(text=option, callback_data=option)]
-                        for option in question['answer_options']]
+    keyboard_buttons = [[types.InlineKeyboardButton(text=option, callback_data=str(index))]
+                        for index, option in enumerate(question['answer_options'])]
     keyboard = types.InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
 
     await message.bot.edit_message_text(
             chat_id=message.chat.id,
             message_id=quiz_state.message_id,
-            text=question['text'],
+            text=f"{question['text']}",
             reply_markup=keyboard
         )
 
@@ -98,12 +99,13 @@ async def handle_answer(callback_query: types.CallbackQuery):
         return
 
     question = quiz_state.questions[quiz_state.current_question]
+    print(callback_query.data)
 
-    if callback_query.data not in question['answer_options']:
+    if not question['answer_options'][int(callback_query.data)]:
         await callback_query.answer("Пожалуйста, выберите один из предложенных вариантов ответа.")
         return
 
-    if callback_query.data == question['right_answer']:
+    if question['answer_options'][int(callback_query.data)] == question['right_answer']:
         quiz_state.correct_answer += 1
 
     quiz_state.current_question += 1
